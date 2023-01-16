@@ -1,0 +1,33 @@
+{
+    "weights": {
+        "STRONG_BUY": ["STRONG BUY"],
+        "BUY": [
+            "BUY",
+            "OVERWEIGHT",
+            "OUTPERFORM",
+            "OVERWT",
+            "OVERWT/IN-LINE",
+            "POSITIVE",
+            "ACCUMULATE"
+        ],
+        "HOLD": [
+            "HOLD",
+            "NEUTRAL",
+            "EQUAL-WEIGHT",
+            "EQUALWT",
+            "EQUALWT/IN-LINE",
+            "EQUALWEIGHT",
+            "SECTOR WEIGHT",
+            "MARKET PERFORM",
+            "PEERPERFORM",
+            "IN-LINE"
+        ],
+        "SELL": [
+            "SELL",
+            "UNDERWEIGHT",
+            "UNDERPERFORM",
+            "UNDERWT",
+            "UNDERWT/CAUTIOUS"
+        ]
+    }
+}
