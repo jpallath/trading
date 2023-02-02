@@ -22,6 +22,14 @@ class IBApi(EWrapper, EClient):
         self.balance = None
         self.done = False
         self.price = None
+        self.conn = None
+        self.orders = []
+        self.sell_orders = []
+        self.portfolio = {}
+        self.twap_orders = {}
+
+
+# DU119915
 
     def error(self, reqId: TickerId, errorCode: int, errorString: str):
         print("Error: ", reqId, " ", errorCode, " ", errorString)
@@ -36,6 +44,20 @@ class IBApi(EWrapper, EClient):
             self.balance = float(value)
             self.done = True
             return self.balance
+
+    def orderStatus(self, orderId, status, filled, remaining, avgFillPrice,
+                    permId, parentId, lastFillPrice, clientId, whyHeld):
+        if orderId in self.orders and status == "Filled":
+            contract, order = self.twap_orders[orderId]
+            symbol = contract.symbol
+            print(
+                "TWAP Purchase Order Executed: Symbol={}, Price={}, Quantity={}"
+                .format(symbol, avgFillPrice, filled))
+
+    def updatePortfolio(self, contract, position, marketPrice, marketValue,
+                        averageCost, unrealizedPNL, realizedPNL, accountName):
+        if contract.secType == "STK":
+            self.portfolio[contract.symbol] = (position, marketPrice)
 
     # def realtimeBar(self, reqId, time, open_, high, low, close, volume, wap, count):
     #     bot.on_bar_update(reqId, time, open_, high, low, close, volume, wap, count)
@@ -55,6 +77,9 @@ class Watch_Bot:
     def currentReqId(self):
         self.reqId = self.reqId + 1
         return self.reqId
+
+    def end(self):
+        self.ib.disconnect()
 
     def get_account_balance(self):
         reqId = self.currentReqId()
@@ -84,6 +109,43 @@ class Watch_Bot:
         response = self.ib.price
         self.ib.price = None
         return response
+
+    def buyStocks(self, upgrades):
+        for up in upgrades:
+            reqId = self.currentReqId()
+            self.ib.orders.append(reqId)
+            contract = Contract()
+            contract.symbol = up.ticker
+            contract.exchange = "SMART"
+            contract.secType = "STK"
+            contract.currency = "USD"
+
+            order = Order()
+            order.action = "BUY"
+            order.cashQty = self.allowance
+            order.orderType = "MKT"
+            order.tif = "DAY"
+            self.ib.twap_orders[reqId] = (contract, order)
+            self.ib.placeOrder(reqId, contract, order)
+
+    def sellStocks(self, upgrades):
+        self.ib.reqAccountUpdates(True, "DU6436059")
+        t.sleep(5)
+        for symbol, (position, marketPrice) in self.ib.portfolio.items():
+
+            contract = Contract()
+            contract.symbol = symbol
+            contract.exchange = "SMART"
+            contract.secType == "STK"
+            contract.currency = "USD"
+
+            order = Order()
+            order.action = "sell"
+            order.totalQuantity = position
+            order.orderType = "MKT"
+            order.tif = "DAY"
+            order_id = self.ib.sell_orders.pop(0)
+            self.ib.placeOrder(order_id, contract, order)
 
 
 # class Bot:

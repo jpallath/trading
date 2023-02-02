@@ -20,6 +20,13 @@ class Upgrades:
         self.price_target = price_target
         self.current_price = None
         self.premium = 0
+        self.allowance = 0
+
+    def generateFromText(self, ticker, interest, current_price, premium):
+        self.ticker = ticker
+        self.interest = interest
+        self.current_price = current_price
+        self.premium = premium
 
 
 def processData(data):
