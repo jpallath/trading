@@ -27,17 +27,18 @@ def getObject():
 
 def generateCsvAndShip(arr):
     header = ['ticker', 'phrase']
+
     with open(f'market_data/{datetime.date.today()}.csv',
               'w',
               encoding='UTF8',
               newline='') as f:
+
         writer = csv.writer(f)
         writer.writerow(header)
-        # writer.writerows(arr)
+
         for item in arr:
             if "PT $" not in item: continue
             writer.writerow(item.split("|"))
-            # writer.writerow(f'{ticker}, {phrase}')
         return
 
 
@@ -59,8 +60,6 @@ def main():
             foundDowngrades = True
 
     upgrades = [x for x in upgrades if x != "\n"]
-
-    # print(upgrades)
 
     for i in range(0, len(upgrades), 3):
         if "<" in upgrades[i] and "US" in upgrades[i]:

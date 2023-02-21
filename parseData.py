@@ -55,7 +55,6 @@ def main(data):
     filtered_data = []
 
     watchBot = Watch_Bot()
-    balance = watchBot.get_account_balance()
 
     for x in data[0]:
         x.current_price = watchBot.get_current_price(x)
