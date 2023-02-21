@@ -57,8 +57,8 @@ def main(data):
     watchBot = Watch_Bot()
     balance = watchBot.get_account_balance()
 
-    for x in data:
-        x.current_price = watchBot.determine_price_targets(x)
+    for x in data[0]:
+        x.current_price = watchBot.get_current_price(x)
         x.premium = x.price_target / x.current_price - 1
         if above_fifteen(x.current_price, x.price_target):
             available_bots.append(x)
@@ -75,15 +75,15 @@ def main(data):
     watchBot.end()
 
 
-todaysLongs = processData(data=[
-    "Upgrades",
-    "AWI US Armstrong World Raised to Inline at Evercore ISI; PT $80",
-    "CARR US Carrier Global Raised to Buy at Mizuho Securities; PT $53",
-    "CHCT US Community Healthcare Trust Raised to Buy at Janney Montgomery",
-    "TRU US TransUnion Raised to Overweight at Wells Fargo; PT $88",
-])[0]
+# todaysLongs = processData(data=[
+#     "Upgrades",
+#     "AWI US Armstrong World Raised to Inline at Evercore ISI; PT $80",
+#     "CARR US Carrier Global Raised to Buy at Mizuho Securities; PT $53",
+#     "CHCT US Community Healthcare Trust Raised to Buy at Janney Montgomery",
+#     "TRU US TransUnion Raised to Overweight at Wells Fargo; PT $88",
+# ])[0]
 
-main(todaysLongs)
+# main(todaysLongs)
 
 # schedule_buy_jobs(available_bots)
 # new_york_time = pytz.timezone("America/New_York")

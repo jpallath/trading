@@ -59,8 +59,14 @@ class IBApi(EWrapper, EClient):
         if contract.secType == "STK":
             self.portfolio[contract.symbol] = (position, marketPrice)
 
-    # def realtimeBar(self, reqId, time, open_, high, low, close, volume, wap, count):
-    #     bot.on_bar_update(reqId, time, open_, high, low, close, volume, wap, count)
+    # def FillTwapParams(baseOrder: Order, strategyType: str, startTime: str, endTime: str, allowPastEndTime: bool):
+    #         baseOrder.algoStrategy = "Twap"
+    #         baseOrder.algoParams = []
+    #         baseOrder.algoParams.append(TagValue("strategyType", strategyType))
+    #         baseOrder.algoParams.append(TagValue("startTime", startTime))
+    #         baseOrder.algoParams.append(TagValue("endTime", endTime))
+    #         baseOrder.algoParams.append(TagValue("allowPastEndTime",
+    #                                             int(allowPastEndTime)))
 
 
 class Watch_Bot:
@@ -69,6 +75,8 @@ class Watch_Bot:
         self.ib = IBApi()
         self.ib.connect("127.0.0.1", 7497, 1)
         self.reqId = 0
+        self.twapDuration = 3600
+        self.interval = 300
         t.sleep(1)
 
     def run_loop(self):
@@ -90,7 +98,7 @@ class Watch_Bot:
             t.sleep(1)
         return self.ib.balance
 
-    def determine_price_targets(self, upgrade):
+    def get_current_price(self, upgrade):
         reqId = self.currentReqId()
         contract = Contract()
         contract.symbol = upgrade.ticker
@@ -110,8 +118,47 @@ class Watch_Bot:
         self.ib.price = None
         return response
 
+    def get_live_price(self, upgrade):
+        reqId = self.currentReqId()
+        contract = Contract()
+        contract.symbol = upgrade.ticker
+        contract.secType = "STK"
+        contract.exchange = "SMART"
+        contract.currency = "USD"
+
+        self.ib.reqMarketDataType(1)
+        self.ib.reqMktData(reqId, contract, '', False, False, [])
+
+        thread = threading.Thread(target=self.ib.run, daemon=True)
+        thread.start()
+        while not self.ib.price:
+            t.sleep(1)
+
+        response = self.ib.price
+        self.ib.price = None
+        return response
+
+    def twap_purchase(self, upgrades):
+        current_time = time.time()
+        elapsed_time = 0
+        while current_time < datetime.strptime("9:36AM", "%I:%M%p"):
+            for up in upgrades:
+                reqId = self.currentReqId()
+                self.ib.orders.append(reqId)
+                contract = Contract()
+                contract.symbol = up.ticker
+                contract.exchange = "SMART"
+                contract.secType = "STK"
+                contract.currency = "USD"
+
+                order = Order()
+                order.action = "BUY"
+                order.orderType = "MKT"
+                order.tif = "DAY"
+
     def buyStocks(self, upgrades):
         for up in upgrades:
+            marketPrice = self.get_current_price(up.ticker)
             reqId = self.currentReqId()
             self.ib.orders.append(reqId)
             contract = Contract()
@@ -122,9 +169,12 @@ class Watch_Bot:
 
             order = Order()
             order.action = "BUY"
-            order.cashQty = self.allowance
             order.orderType = "MKT"
             order.tif = "DAY"
+            order_size = up.allowance / marketPrice
+
+            order_size = int(self.allowance / self.twap_duration /
+                             self.twap_interval)
             self.ib.twap_orders[reqId] = (contract, order)
             self.ib.placeOrder(reqId, contract, order)
 

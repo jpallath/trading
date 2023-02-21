@@ -14,10 +14,8 @@
 # one table for all downgrades
 # analyst, pt, rating, stock price at 9 31, premium, twap (get historical twap between 9:32:36), twap sell, PNL -(sell/entry)-1 -(sell/entry)-1*quantity
 
-
 # premium for shorts is
 # -(sell - entry)
-
 
 from ibapi.client import EClient
 from ibapi.wrapper import EWrapper, TickerId, TickType, TickAttrib
@@ -25,6 +23,7 @@ from ibapi.contract import Contract
 
 
 class TestApp(EWrapper, EClient):
+
     def __init__(self):
         EClient.__init__(self, self)
         self.price = None
@@ -32,10 +31,8 @@ class TestApp(EWrapper, EClient):
     def error(self, reqId: TickerId, errorCode: int, errorString: str):
         print("Error ", reqId, " ", errorCode, " ", errorString)
 
-    def tickPrice(
-        self, reqId: TickerId, tickType: TickType, price: float, attrib: TickAttrib
-    ):
-        print("hello")
+    def tickPrice(self, reqId: TickerId, tickType: TickType, price: float,
+                  attrib: TickAttrib):
         if tickType == 4:
             self.price = price
             self.disconnect()

@@ -35,25 +35,27 @@ def processData(data):
     count = 0
     current_grade = ""
     while count < len(data):
-        if data[count] == "Upgrades" or data[count] == "Downgrades":
-            current_grade = data[count]
-        if current_grade == "Upgrades" and data[count] != "Upgrades":
-            upgrades.append(get_terms(data[count]))
-        elif current_grade == "Downgrades" and data[count] != "Downgrades":
-            downgrades.append(get_terms(data[count]))
+        # print(data[count])
+        upgrades.append(get_terms(data[count]))
+        # if data[count] == "Upgrades" or data[count] == "Downgrades":
+        #     current_grade = data[count]
+        # if current_grade == "Upgrades" and data[count] != "Upgrades":
+        #     upgrades.append(get_terms(data[count]))
+        # elif current_grade == "Downgrades" and data[count] != "Downgrades":
+        #     downgrades.append(get_terms(data[count]))
         count += 1
 
     todays_longs = process_grades(upgrades, "upgrades")
-
     return [todays_longs]
 
 
 def get_terms(phrase):
-    [ticker, interest] = get_ticker(phrase, interested_tickers)
-    [weight, broker] = get_broker_and_weight(phrase, brokers)
-    price_target = get_price_target(phrase)
-    if not price_target:
+    [ticker, interest] = get_ticker(phrase[0], interested_tickers)
+    [weight, broker] = get_broker_and_weight(phrase[1], brokers)
+    price_target = get_price_target(phrase[1])
+    if not price_target or weight == "HOLD":
         return
+
     return {
         "ticker": (ticker, interest),
         "weight": weight,
@@ -62,8 +64,8 @@ def get_terms(phrase):
     }
 
 
-def get_ticker(phrase, interested_tickers):
-    potential_ticker = phrase.split(" ")[0]
+def get_ticker(line, interested_tickers):
+    potential_ticker = line.strip()
     for ticker in interested_tickers["tickers"]:
         if ticker == potential_ticker:
             return [ticker, True]
